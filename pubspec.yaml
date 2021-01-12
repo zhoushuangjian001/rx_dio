@@ -1,0 +1,20 @@
+name: idkit_rxdio
+description: A new Flutter package project.
+version: 0.0.1
+author:
+homepage:
+
+environment:
+  sdk: ">=2.7.0 <3.0.0"
+  flutter: ">=1.17.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  # 网络依赖
+  dio: ^3.0.10
+  # rxdart
+  rxdart: ^0.25.0
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
