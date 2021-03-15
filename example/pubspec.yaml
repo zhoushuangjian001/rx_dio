@@ -28,8 +28,7 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.1
 
-  dio:
-    dio: ^3.0.10
+  dio: ^3.0.10
 
   idkit_rxdio:
     path: ../

@@ -1,4 +1,6 @@
-part of idkit_rxdio;
+import 'dart:io';
+import 'package:dio/dio.dart';
+import 'package:rxdart/subjects.dart';
 
 /// Rxdio 请求主体
 class Rxdio {
@@ -186,7 +188,7 @@ class Rxdio {
     Function(int, int) receiveProgress,
   }) {
     // 创建观察者
-    PublishSubject _publishSubject = PublishSubject<T>();
+    dynamic _publishSubject = PublishSubject();
     _publishSubject
         .doOnListen(onStart ?? doOnListen)
         .doOnData(onFinish ?? doOnData)
@@ -203,8 +205,6 @@ class Rxdio {
     switch (method) {
       case Method.Get:
         _dio
-            .addProxy(enabled: isProxy, url: proxy ?? proxyUrl())
-            .addSSL(enabled: isSSL, certificate: cer ?? certificate())
             .get(url, queryParameters: params, cancelToken: cancelToken)
             .then((value) => _publishSubject.add(value.data))
             .catchError((e) => _publishSubject.addError(e))
@@ -214,8 +214,6 @@ class Rxdio {
         break;
       case Method.Post:
         _dio
-            .addProxy(enabled: isProxy, url: proxy ?? proxyUrl())
-            .addSSL(enabled: isSSL, certificate: certificate ?? certificate())
             .post(url,
                 data: data,
                 queryParameters: params,
@@ -278,6 +276,8 @@ class Rxdio {
 
   /// 接收进度
   void onReceiveProgress(int a, int b) {}
+
+  PublishSubject() {}
 }
 
 /// 请求类型
