@@ -1,287 +1,251 @@
-import 'dart:io';
-import 'package:dio/dio.dart';
-import 'package:rxdart/subjects.dart';
+part of idkit_rxdio;
 
-/// Rxdio 请求主体
-class Rxdio {
-  /// Get 请求
-  void get<T>({
-    String url,
-    Map<String, dynamic> params,
-    bool isProxy = false,
-    String proxyUrl,
-    bool isSSL = true,
-    String certificate,
-    int timeout = 15,
-    CancelToken cancelToken,
-    Function onStart,
-    Function(T) onFinish,
-    Function(dynamic, StackTrace) onFail,
-    Function onEnd,
-    Function onTimeout,
-    Function onCancel,
-  }) {
-    _requestMethod(
-      url: url,
-      params: params,
-      isProxy: isProxy,
-      proxy: proxyUrl,
-      isSSL: isSSL,
-      cer: certificate,
-      method: Method.Get,
-      timeout: timeout,
-      cancelToken: cancelToken,
-      onStart: onStart,
-      onFinish: onFinish,
-      onFail: onFail,
-      onEnd: onEnd,
-      onTimeout: onTimeout,
-      onCancel: onCancel,
-    );
+class RxDio with Inspect {
+  /// 请求开始
+  Function _start;
+
+  /// 请求结束
+  Function _end;
+
+  /// 请求体
+  Dio _dio;
+
+  /// 初始化
+  RxDio({BaseOptions options}) {
+    _dio = Dio(options);
   }
 
-  /// Post 请求
-  void post<T>({
-    String url,
-    dynamic data,
-    Map<String, dynamic> params,
-    bool isProxy = false,
-    String proxyUrl,
-    bool isSSL = true,
-    String certificate,
-    int timeout = 15,
-    CancelToken cancelToken,
-    Function onStart,
-    Function(T) onFinish,
-    Function(dynamic, StackTrace) onFail,
-    Function onEnd,
-    Function onTimeout,
-    Function onCancel,
-  }) {
-    _requestMethod(
-      url: url,
-      data: data,
-      params: params,
-      isProxy: isProxy,
-      proxy: proxyUrl,
-      isSSL: isSSL,
-      cer: certificate,
-      method: Method.Post,
-      timeout: timeout,
-      cancelToken: cancelToken,
-      onStart: onStart,
-      onFinish: onFinish,
-      onFail: onFail,
-      onEnd: onEnd,
-      onTimeout: onTimeout,
-      onCancel: onCancel,
-    );
+  /// 请求开始回调
+  RxDio addStart(Function() start) {
+    _start = start;
+    return this;
   }
 
-  /// 请求
-  void request<T>({
-    String url,
-    dynamic data,
-    Map<String, dynamic> params,
-    bool isProxy = false,
-    String proxyUrl,
-    bool isSSL = true,
-    String certificate,
-    Method method,
-    int timeout = 15,
-    CancelToken cancelToken,
-    Function onStart,
-    Function(T) onFinish,
-    Function(dynamic, StackTrace) onFail,
-    Function onEnd,
-    Function onTimeout,
-    Function onCancel,
-  }) {
-    _requestMethod(
-      url: url,
-      data: data,
-      params: params,
-      isProxy: isProxy,
-      proxy: proxyUrl,
-      isSSL: isSSL,
-      cer: certificate,
-      method: method,
-      timeout: timeout,
-      cancelToken: cancelToken,
-      onStart: onStart,
-      onFinish: onFinish,
-      onFail: onFail,
-      onEnd: onEnd,
-      onTimeout: onTimeout,
-      onCancel: onCancel,
-    );
+  /// 请求结束回调
+  RxDio addEnd(Function() end) {
+    _end = end;
+    return this;
   }
 
-  /// 文件上传
-  void upload<T>({
-    String url,
-    String name,
-    List<File> files,
-    Map<String, dynamic> params,
-    bool isProxy = false,
-    String proxyUrl,
-    bool isSSL = true,
-    String certificate,
-    int timeout = 60,
-    CancelToken cancelToken,
-    Function onStart,
-    Function(T) onFinish,
-    Function(dynamic, StackTrace) onFail,
-    Function onEnd,
-    Function onTimeout,
-    Function onCancel,
-    Function(int, int) onSendProgress,
-  }) {
-    if (files.isEmpty) return;
-    FormData _data = FormData();
-    files.map((file) async* {
-      var _file = await MultipartFile.fromFile(file.path);
-      _data.files.add(
-        MapEntry(name, _file),
-      );
-    });
-    _requestMethod(
-      url: url,
-      data: _data,
-      params: params,
-      isProxy: isProxy,
-      proxy: proxyUrl,
-      isSSL: isSSL,
-      cer: certificate,
-      method: Method.Post,
-      timeout: timeout,
-      cancelToken: cancelToken,
-      onStart: onStart,
-      onFinish: onFinish,
-      onFail: onFail,
-      onEnd: onEnd,
-      onTimeout: onTimeout,
-      onCancel: onCancel,
-      sendProgress: onSendProgress,
-    );
-  }
-
-  /// 公共请求
-  void _requestMethod<T>({
-    String url,
-    dynamic data,
-    Map<String, dynamic> params,
-    bool isProxy,
-    String proxy,
-    bool isSSL,
-    String cer,
-    Method method,
-    int timeout,
-    CancelToken cancelToken,
-    Function onStart,
-    Function(dynamic) onFinish,
-    Function(dynamic, StackTrace) onFail,
-    Function onEnd,
-    Function onTimeout,
-    Function onCancel,
-    Function(int, int) sendProgress,
-    Function(int, int) receiveProgress,
-  }) {
-    // 创建观察者
-    dynamic _publishSubject = PublishSubject();
-    _publishSubject
-        .doOnListen(onStart ?? doOnListen)
-        .doOnData(onFinish ?? doOnData)
-        .doOnDone(onEnd ?? doOnDone)
-        .doOnError(onFail ?? onError)
-        .doOnCancel(onCancel ?? doOnCancel)
-        .listen(null);
-
-    // 请求拦截
-    var _dio = Dio(baseOptions());
-    _dio.interceptors.addAll(interceptorIterables(_dio));
-
-    // 请求方式区分
-    switch (method) {
-      case Method.Get:
-        _dio
-            .get(url, queryParameters: params, cancelToken: cancelToken)
-            .then((value) => _publishSubject.add(value.data))
-            .catchError((e) => _publishSubject.addError(e))
-            .whenComplete(() => _publishSubject.close())
-            .timeout(Duration(seconds: timeout),
-                onTimeout: onTimeout ?? doOnTimeout);
-        break;
-      case Method.Post:
-        _dio
-            .post(url,
-                data: data,
-                queryParameters: params,
-                cancelToken: cancelToken,
-                onSendProgress: sendProgress ?? onSendProgress,
-                onReceiveProgress: receiveProgress ?? onReceiveProgress)
-            .then((value) => _publishSubject.add(value.data))
-            .catchError((e) => _publishSubject.addError(e))
-            .whenComplete(() => _publishSubject.close())
-            .timeout(Duration(seconds: timeout),
-                onTimeout: onTimeout ?? doOnTimeout);
-        break;
-      default:
+  /// 添加请求配置
+  RxDio addOptions({BaseOptions options}) {
+    if (options != null) {
+      _dio.options = options;
     }
+    return this;
   }
 
-  /// 请求拦截配置
-  Iterable<Interceptor> interceptorIterables(Dio dio) {
-    return [];
-  }
-
-  /// 请求体配置
-  BaseOptions baseOptions() {
-    return BaseOptions();
-  }
-
-  /// 请求代理地址
-  String proxyUrl() {
-    return "";
+  /// 添加代理转发
+  RxDio addProxy(String url) {
+    if (inspectNullAndEmpty(url)) {
+      DefaultHttpClientAdapter defaultHttpClientAdapter =
+          _dio.httpClientAdapter as DefaultHttpClientAdapter;
+      defaultHttpClientAdapter.onHttpClientCreate = (client) {
+        client.findProxy = (_) {
+          return url;
+        };
+      };
+    }
+    return this;
   }
 
   /// 证书校验
-  String certificate() {
-    return "";
+  RxDio addSSL(String cer) {
+    if (inspectNullAndEmpty(cer)) {
+      DefaultHttpClientAdapter _defaultHttpClientAdapter =
+          _dio.httpClientAdapter as DefaultHttpClientAdapter;
+      _defaultHttpClientAdapter.onHttpClientCreate = (client) {
+        client.badCertificateCallback =
+            (X509Certificate _certificate, String host, int port) {
+          if (_certificate.pem == cer) {
+            return true;
+          }
+          return false;
+        };
+      };
+    }
+    return this;
   }
 
-  /// 开始监听
-  void doOnListen() {}
+  /// 添加请求拦截
+  RxDio addInterceptors(Function(Dio, Function(Iterable<Interceptor>)) call) {
+    call(_dio, (list) {
+      _dio.interceptors.addAll(list);
+    });
+    return this;
+  }
 
-  /// 返回数据
-  void doOnData(dynamic data) {}
+  /// Get
+  PublishSubject<T> getRequest<T>(String url,
+      {Map<String, dynamic> parameter}) {
+    // 创建观察序列
+    PublishSubject<T> _publishSubject = PublishSubject();
+    if (inspectNullAndEmpty(url)) {
+      _start?.call;
+      _request(_dio.get(url, queryParameters: parameter), _publishSubject);
+    } else {
+      _publishSubject.addError(RxError("请求地址为 null", type: RxErrorType.NOURL));
+      _publishSubject.close();
+    }
+    return _publishSubject;
+  }
 
-  /// 请求失败
-  void onError(
-    dynamic err,
-    StackTrace trace,
-  ) {}
+  /// Post
+  PublishSubject<T> postRequest<T>(String url,
+      {Map<String, dynamic> parameter}) {
+    // 创建观察序列
+    PublishSubject<T> _publishSubject = PublishSubject();
+    if (inspectNullAndEmpty(url)) {
+      _request(_dio.post(url, queryParameters: parameter), _publishSubject);
+    } else {
+      _publishSubject.addError(RxError("请求地址为 null", type: RxErrorType.NOURL));
+      _publishSubject.close();
+    }
+    return _publishSubject;
+  }
 
-  /// 请求完成
-  void doOnDone() {}
+  /// Upload
+  PublishSubject<T> uploadRequest<T>(String url, String name, List<File> files,
+      {Map<String, dynamic> parameter,
+      Function(int, int) onSendProgress,
+      Function(int, int) onReceiveProgress}) {
+    // 创建观察序列
+    PublishSubject<T> _publishSubject = PublishSubject();
+    if (inspectNullAndEmpty(url) &&
+        inspectNullAndEmpty(files) &&
+        inspectNullAndEmpty(name)) {
+      _start?.call;
+      FormData data = FormData();
+      files.map((file) async* {
+        final _file = await MultipartFile.fromFile(file.path);
+        data.files.add(
+          MapEntry(name, _file),
+        );
+      });
+      _request(
+          _dio.post(url,
+              queryParameters: parameter,
+              data: data,
+              onSendProgress: onSendProgress,
+              onReceiveProgress: onReceiveProgress),
+          _publishSubject);
+    } else {
+      _publishSubject.addError(RxError("请求参数异常", type: RxErrorType.PARAMETER));
+      _publishSubject.close();
+    }
+    return _publishSubject;
+  }
 
-  /// 监控取消
-  void doOnCancel() {}
+  /// 文件下载
+  PublishSubject<T> downloadRequest<T>(String url, String savePath,
+      {Map<String, dynamic> parameter,
+      bool deleteOnError,
+      String lengthHeader,
+      Function(int, int) onSendProgress,
+      Function(int, int) onReceiveProgress}) {
+    // 创建观察序列
+    PublishSubject<T> _publishSubject = PublishSubject();
+    if (inspectNullAndEmpty(url) && inspectNullAndEmpty(savePath)) {
+      _start?.call;
+      _request(
+          _dio.download(
+            url,
+            savePath,
+            lengthHeader: lengthHeader,
+            queryParameters: parameter,
+            deleteOnError: deleteOnError,
+            onReceiveProgress: onReceiveProgress,
+          ),
+          _publishSubject);
+    } else {
+      _publishSubject.addError(RxError("请求地址为 null", type: RxErrorType.NOURL));
+      _publishSubject.close();
+    }
+    return _publishSubject;
+  }
 
-  /// 请求超时
-  void doOnTimeout() {}
-
-  /// 发送进度
-  void onSendProgress(int a, int b) {}
-
-  /// 接收进度
-  void onReceiveProgress(int a, int b) {}
-
-  PublishSubject() {}
+  // 公共方法处理
+  void _request<T>(Future<Response<T>> future, PublishSubject _publishSubject) {
+    future.then((value) {
+      final data = value.data;
+      _publishSubject.add(data);
+    }).onError((error, stackTrace) {
+      if (error is DioError) {
+        switch (error.type) {
+          case DioErrorType.CANCEL:
+            _publishSubject.addError(RxError("请求取消", type: RxErrorType.CANCLE));
+            break;
+          case DioErrorType.RECEIVE_TIMEOUT:
+            _publishSubject
+                .addError(RxError("客户端接收数据超时", type: RxErrorType.TIMEOUT));
+            break;
+          case DioErrorType.CONNECT_TIMEOUT:
+            _publishSubject
+                .addError(RxError("客户端连接服务器超时", type: RxErrorType.TIMEOUT));
+            break;
+          case DioErrorType.SEND_TIMEOUT:
+            _publishSubject
+                .addError(RxError("服务器确认数据发送超时", type: RxErrorType.TIMEOUT));
+            break;
+          default:
+            _publishSubject
+                .addError(RxError("Dio 未知错误", type: RxErrorType.UNKNOWN));
+        }
+      } else {
+        _publishSubject.addError(RxError("未知错误", type: RxErrorType.UNKNOWN));
+      }
+      _dio.close(force: true);
+    }).whenComplete(() {
+      _end?.call;
+      _publishSubject.close();
+      _dio.close(force: true);
+    });
+  }
 }
 
-/// 请求类型
-enum Method {
-  Get,
-  Post,
+/// 对象检查
+class Inspect {
+  /// 判断是否为空
+  /// [inspect] : 要检查的对象
+  /// [true] : 对象可用 ; [false] : 对象不可用
+  bool inspectNullAndEmpty(Object inspect) {
+    if (inspect == null) return false;
+    if (inspect is String) {
+      String string = inspect;
+      return string.isNotEmpty;
+    } else if (inspect is List) {
+      List list = inspect;
+      return list.isNotEmpty;
+    } else if (inspect is Map) {
+      Map map = inspect;
+      return map.isNotEmpty;
+    }
+    return false;
+  }
+}
+
+/// 错误对象
+class RxError implements Exception {
+  final String message;
+  final RxErrorType type;
+  const RxError(this.message, {this.type});
+
+  /// 获取状态
+  RxErrorType get state => this.type;
+
+  /// 错误信息
+  String toString() {
+    Object message = this.message;
+    if (message == null) return "RxException: 错误信息为 null";
+    return "RxException: $message";
+  }
+}
+
+/// 错误类型
+enum RxErrorType {
+  NOURL,
+  TIMEOUT,
+  CANCLE,
+  UNKNOWN,
+  PARAMETER,
 }
