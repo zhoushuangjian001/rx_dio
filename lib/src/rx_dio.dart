@@ -92,11 +92,12 @@ class RxDio with Inspect {
 
   /// Post
   PublishSubject<T> postRequest<T>(String url,
-      {Map<String, dynamic> parameter}) {
+      {dynamic data, Map<String, dynamic> parameter}) {
     // 创建观察序列
     PublishSubject<T> _publishSubject = PublishSubject();
     if (inspectNullAndEmpty(url)) {
-      _request(_dio.post(url, queryParameters: parameter), _publishSubject);
+      _request(_dio.post(url, data: data, queryParameters: parameter),
+          _publishSubject);
     } else {
       _publishSubject.addError(RxError("请求地址为 null", type: RxErrorType.NOURL));
       _publishSubject.close();
@@ -133,6 +134,16 @@ class RxDio with Inspect {
       _publishSubject.addError(RxError("请求参数异常", type: RxErrorType.PARAMETER));
       _publishSubject.close();
     }
+    return _publishSubject;
+  }
+
+  /// Put 请求
+  PublishSubject<T> putRequest<T>(String url,
+      {dynamic data, Map<String, dynamic> parameter}) {
+    // 创建观察序列
+    PublishSubject<T> _publishSubject = PublishSubject();
+    _request(
+        _dio.put(url, data: data, queryParameters: parameter), _publishSubject);
     return _publishSubject;
   }
 
