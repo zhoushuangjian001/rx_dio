@@ -142,8 +142,13 @@ class RxDio with Inspect {
       {dynamic data, Map<String, dynamic> parameter}) {
     // 创建观察序列
     PublishSubject<T> _publishSubject = PublishSubject();
-    _request(
-        _dio.put(url, data: data, queryParameters: parameter), _publishSubject);
+    if (inspectNullAndEmpty(url)) {
+      _request(_dio.put(url, data: data, queryParameters: parameter),
+          _publishSubject);
+    } else {
+      _publishSubject.addError(RxError("请求参数异常", type: RxErrorType.PARAMETER));
+      _publishSubject.close();
+    }
     return _publishSubject;
   }
 
