@@ -1,6 +1,7 @@
 library idkit_rxdio;
 
 import 'dart:io';
+export 'package:dio/dio.dart';
 import 'package:dio/adapter.dart';
 import 'package:dio/dio.dart';
 import 'package:rxdart/rxdart.dart';

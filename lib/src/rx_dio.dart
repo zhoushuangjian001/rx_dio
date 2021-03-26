@@ -68,10 +68,15 @@ class RxDio with Inspect {
   }
 
   /// 添加请求拦截
-  RxDio addInterceptors(Function(Dio, Function(Iterable<Interceptor>)) call) {
-    call(_dio, (list) {
-      _dio.interceptors.addAll(list);
-    });
+  RxDio addInterceptors(Function(Dio dio) call) {
+    final interceptor = call(_dio);
+    if (interceptor != null) {
+      if (interceptor is Iterable<Interceptor>) {
+        _dio.interceptors.addAll(interceptor);
+      } else if (interceptor is Interceptor) {
+        _dio.interceptors.add(interceptor);
+      }
+    }
     return this;
   }
 
@@ -81,7 +86,7 @@ class RxDio with Inspect {
     // 创建观察序列
     PublishSubject<T> _publishSubject = PublishSubject();
     if (inspectNullAndEmpty(url)) {
-      _start?.call;
+      _start?.call();
       _request(_dio.get(url, queryParameters: parameter), _publishSubject);
     } else {
       _publishSubject.addError(RxError("请求地址为 null", type: RxErrorType.NOURL));
@@ -96,6 +101,7 @@ class RxDio with Inspect {
     // 创建观察序列
     PublishSubject<T> _publishSubject = PublishSubject();
     if (inspectNullAndEmpty(url)) {
+      _start?.call();
       _request(_dio.post(url, data: data, queryParameters: parameter),
           _publishSubject);
     } else {
@@ -115,7 +121,7 @@ class RxDio with Inspect {
     if (inspectNullAndEmpty(url) &&
         inspectNullAndEmpty(files) &&
         inspectNullAndEmpty(name)) {
-      _start?.call;
+      _start?.call();
       FormData data = FormData();
       files.map((file) async* {
         final _file = await MultipartFile.fromFile(file.path);
@@ -143,6 +149,7 @@ class RxDio with Inspect {
     // 创建观察序列
     PublishSubject<T> _publishSubject = PublishSubject();
     if (inspectNullAndEmpty(url)) {
+      _start?.call();
       _request(_dio.put(url, data: data, queryParameters: parameter),
           _publishSubject);
     } else {
@@ -162,7 +169,7 @@ class RxDio with Inspect {
     // 创建观察序列
     PublishSubject<T> _publishSubject = PublishSubject();
     if (inspectNullAndEmpty(url) && inspectNullAndEmpty(savePath)) {
-      _start?.call;
+      _start?.call();
       _request(
           _dio.download(
             url,
@@ -212,7 +219,7 @@ class RxDio with Inspect {
       }
       _dio.close(force: true);
     }).whenComplete(() {
-      _end?.call;
+      _end?.call();
       _publishSubject.close();
       _dio.close(force: true);
     });
