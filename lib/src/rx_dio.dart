@@ -159,13 +159,13 @@ class RxDio with Inspect {
     return _publishSubject;
   }
 
-
-    /// Delete 请求
+  /// Delete 请求
   PublishSubject<T> deleteRequest<T>(String url,
       {dynamic data, Map<String, dynamic> parameter}) {
     // 创建观察序列
     PublishSubject<T> _publishSubject = PublishSubject();
     if (inspectNullAndEmpty(url)) {
+      _start?.call();
       _request(_dio.delete(url, data: data, queryParameters: parameter),
           _publishSubject);
     } else {
@@ -174,7 +174,6 @@ class RxDio with Inspect {
     }
     return _publishSubject;
   }
-
 
   /// 文件下载
   PublishSubject<T> downloadRequest<T>(String url, String savePath,
@@ -234,7 +233,6 @@ class RxDio with Inspect {
       } else {
         _publishSubject.addError(RxError("未知错误", type: RxErrorType.UNKNOWN));
       }
-      _dio.close(force: true);
     }).whenComplete(() {
       _end?.call();
       _publishSubject.close();
