@@ -87,7 +87,10 @@ class RxDio with Inspect {
     PublishSubject<T> _publishSubject = PublishSubject();
     if (inspectNullAndEmpty(url)) {
       _start?.call();
-      _request(_dio.get(url, queryParameters: parameter), _publishSubject);
+      _request(
+        _dio.get(url, queryParameters: parameter),
+        _publishSubject,
+      );
     } else {
       _publishSubject.addError(RxError("请求地址为 null", type: RxErrorType.NOURL));
       _publishSubject.close();
@@ -102,8 +105,10 @@ class RxDio with Inspect {
     PublishSubject<T> _publishSubject = PublishSubject();
     if (inspectNullAndEmpty(url)) {
       _start?.call();
-      _request(_dio.post(url, data: data, queryParameters: parameter),
-          _publishSubject);
+      _request(
+        _dio.post(url, data: data, queryParameters: parameter),
+        _publishSubject,
+      );
     } else {
       _publishSubject.addError(RxError("请求地址为 null", type: RxErrorType.NOURL));
       _publishSubject.close();
@@ -130,12 +135,13 @@ class RxDio with Inspect {
         );
       });
       _request(
-          _dio.post(url,
-              queryParameters: parameter,
-              data: data,
-              onSendProgress: onSendProgress,
-              onReceiveProgress: onReceiveProgress),
-          _publishSubject);
+        _dio.post(url,
+            queryParameters: parameter,
+            data: data,
+            onSendProgress: onSendProgress,
+            onReceiveProgress: onReceiveProgress),
+        _publishSubject,
+      );
     } else {
       _publishSubject.addError(RxError("请求参数异常", type: RxErrorType.PARAMETER));
       _publishSubject.close();
@@ -150,8 +156,10 @@ class RxDio with Inspect {
     PublishSubject<T> _publishSubject = PublishSubject();
     if (inspectNullAndEmpty(url)) {
       _start?.call();
-      _request(_dio.put(url, data: data, queryParameters: parameter),
-          _publishSubject);
+      _request(
+        _dio.put(url, data: data, queryParameters: parameter),
+        _publishSubject,
+      );
     } else {
       _publishSubject.addError(RxError("请求参数异常", type: RxErrorType.PARAMETER));
       _publishSubject.close();
@@ -166,8 +174,10 @@ class RxDio with Inspect {
     PublishSubject<T> _publishSubject = PublishSubject();
     if (inspectNullAndEmpty(url)) {
       _start?.call();
-      _request(_dio.delete(url, data: data, queryParameters: parameter),
-          _publishSubject);
+      _request(
+        _dio.delete(url, data: data, queryParameters: parameter),
+        _publishSubject,
+      );
     } else {
       _publishSubject.addError(RxError("请求地址为 null", type: RxErrorType.NOURL));
       _publishSubject.close();
@@ -187,15 +197,16 @@ class RxDio with Inspect {
     if (inspectNullAndEmpty(url) && inspectNullAndEmpty(savePath)) {
       _start?.call();
       _request(
-          _dio.download(
-            url,
-            savePath,
-            lengthHeader: lengthHeader,
-            queryParameters: parameter,
-            deleteOnError: deleteOnError,
-            onReceiveProgress: onReceiveProgress,
-          ),
-          _publishSubject);
+        _dio.download(
+          url,
+          savePath,
+          lengthHeader: lengthHeader,
+          queryParameters: parameter,
+          deleteOnError: deleteOnError,
+          onReceiveProgress: onReceiveProgress,
+        ),
+        _publishSubject,
+      );
     } else {
       _publishSubject.addError(RxError("请求地址为 null", type: RxErrorType.NOURL));
       _publishSubject.close();
@@ -204,7 +215,8 @@ class RxDio with Inspect {
   }
 
   // 公共方法处理
-  void _request<T>(Future<Response<T>> future, PublishSubject _publishSubject) {
+  void _request<T>(
+      Future<Response<dynamic>> future, PublishSubject _publishSubject) {
     future.then((value) {
       final data = value.data;
       _publishSubject.add(data);
