@@ -68,6 +68,8 @@ class _MyHomePageState extends State<MyHomePage> {
         .getRequest("https://api.apiopen.top/getJoke?page=1&count=2&type=video")
         .listen((value) {
       print(value.toString());
+    }).onError((e) {
+      if (e is RxError) {}
     });
   }
 
