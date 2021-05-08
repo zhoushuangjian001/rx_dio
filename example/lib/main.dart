@@ -64,7 +64,7 @@ class _MyHomePageState extends State<MyHomePage> {
     RxDio()
         .addStart(() => print("开始"))
         .addEnd(() => print("结束"))
-        .addInterceptors((dio) => [Interceptor()])
+        .addInterceptors((dio) => [RxInterceptor()])
         .getRequest("https://api.apiopen.top/getJoke?page=1&count=2&type=video")
         .listen((value) {
       print(value.toString());

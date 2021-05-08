@@ -1,5 +1,3 @@
-part of idkit_rxdio;
-
 /// RxDio 请求异常类
 /// 参数
 /// -1 : 其他异常

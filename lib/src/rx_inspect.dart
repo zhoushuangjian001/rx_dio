@@ -1,5 +1,3 @@
-part of idkit_rxdio;
-
 extension RxString on String {
   /// 判断是否是空或者Null
   bool isEmptyAndNull() {

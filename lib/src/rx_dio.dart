@@ -1,4 +1,9 @@
-part of idkit_rxdio;
+import 'dart:io';
+import 'package:dio/adapter.dart';
+import 'package:dio/dio.dart';
+import 'package:rxdart/rxdart.dart';
+import 'package:idkit_rxdio/src/rx_error.dart';
+import 'package:idkit_rxdio/src/rx_inspect.dart';
 
 class RxDio {
   /// 请求开始
@@ -235,7 +240,6 @@ class RxDio {
     }).whenComplete(() {
       _end?.call();
       _publishSubject.close();
-      _dio.close(force: true);
     });
   }
 }
