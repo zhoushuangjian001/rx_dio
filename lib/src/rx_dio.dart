@@ -223,23 +223,29 @@ class RxDio {
   // 公共方法处理
   void _request<T>(
       Future<Response<dynamic>> future, PublishSubject _publishSubject) {
-    future.then((response) {
-      _publishSubject.add(response);
-    }).onError((error, stackTrace) {
-      if (error is DioError) {
-        _publishSubject.addError(
-          RxError(
-            error.response.statusCode,
-            error.response.statusMessage,
-            data: error.response.data,
-          ),
-        );
-      } else {
-        _publishSubject.add(RxError(-1, error.toString()));
-      }
-    }).whenComplete(() {
-      _end?.call();
-      _publishSubject.close();
-    });
+    try {
+      future.then((response) {
+        _publishSubject.add(response);
+      }).whenComplete(() {
+        _end?.call();
+        _publishSubject.close();
+      });
+    } on DioError catch (error) {
+      _publishSubject.addError(
+        RxError(
+          error.response.statusCode,
+          error.response.statusMessage,
+          data: error.response.data,
+        ),
+      );
+    } catch (error) {
+      _publishSubject.add(RxError(-1, error.toString()));
+    }
   }
+
+  /// 清除请求 Task, 释放资源
+  void close({bool force}) => _dio.close;
+
+  /// 清除 dio 队列等待
+  void clear() => _dio.clear;
 }
