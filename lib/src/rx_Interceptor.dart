@@ -14,21 +14,21 @@ class RxInterceptor extends Interceptor {
   final InterceptorErrorCallback _onError;
 
   @override
-  Future onRequest(RequestOptions options) async {
+  Future<dynamic> onRequest(RequestOptions options) async {
     if (_onRequest != null) {
       return _onRequest(options);
     }
   }
 
   @override
-  Future onResponse(Response response) async {
+  Future<dynamic> onResponse(Response<dynamic> response) async {
     if (_onResponse != null) {
       return _onResponse(response);
     }
   }
 
   @override
-  Future onError(DioError err) async {
+  Future<dynamic> onError(DioError err) async {
     if (_onError != null) {
       return _onError(err);
     }
