@@ -60,18 +60,7 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  void loadRequest() {
-    RxDio()
-        .addStart(() => print("开始"))
-        .addEnd(() => print("结束"))
-        .addInterceptors((dio) => [RxInterceptor()])
-        .getRequest("https://api.apiopen.top/getJoke?page=1&count=2&type=video")
-        .listen((value) {
-      print(value.toString());
-    }).onError((e) {
-      if (e is RxError) {}
-    });
-  }
+  void loadRequest() {}
 
   @override
   Widget build(BuildContext context) {
@@ -108,6 +97,7 @@ class _MyHomePageState extends State<MyHomePage> {
           // horizontal).
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
+            Container(),
             Text(
               'You have pushed the button this many times:',
             ),

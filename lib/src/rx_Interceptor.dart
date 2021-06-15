@@ -1,10 +1,6 @@
 import 'package:dio/dio.dart';
 
 class RxInterceptor extends Interceptor {
-  final InterceptorSendCallback _onRequest;
-  final InterceptorSuccessCallback _onResponse;
-  final InterceptorErrorCallback _onError;
-
   RxInterceptor({
     InterceptorSendCallback onRequest,
     InterceptorSuccessCallback onResponse,
@@ -12,6 +8,10 @@ class RxInterceptor extends Interceptor {
   })  : _onRequest = onRequest,
         _onResponse = onResponse,
         _onError = onError;
+
+  final InterceptorSendCallback _onRequest;
+  final InterceptorSuccessCallback _onResponse;
+  final InterceptorErrorCallback _onError;
 
   @override
   Future onRequest(RequestOptions options) async {

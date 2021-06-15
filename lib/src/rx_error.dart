@@ -3,6 +3,9 @@
 /// -1 : 其他异常
 /// 422: 参数缺失
 class RxError implements Exception {
+  /// 异常类初始化
+  const RxError(this.code, this.message, {this.data});
+
   /// 异常码
   final int code;
 
@@ -11,7 +14,4 @@ class RxError implements Exception {
 
   /// 异常数据
   final dynamic data;
-
-  /// 异常类初始化
-  const RxError(this.code, this.message, {this.data});
 }

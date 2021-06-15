@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:dio/adapter.dart';
 import 'package:dio/dio.dart';
@@ -6,6 +7,11 @@ import 'package:idkit_rxdio/src/rx_error.dart';
 import 'package:idkit_rxdio/src/rx_inspect.dart';
 
 class RxDio {
+  /// 初始化
+  RxDio({BaseOptions options}) {
+    _dio = Dio(options);
+  }
+
   /// 请求开始
   Function _start;
 
@@ -14,11 +20,6 @@ class RxDio {
 
   /// 请求体
   Dio _dio;
-
-  /// 初始化
-  RxDio({BaseOptions options}) {
-    _dio = Dio(options);
-  }
 
   /// 请求开始回调
   RxDio addStart(Function() start) {
@@ -43,9 +44,9 @@ class RxDio {
   /// 添加代理转发
   RxDio addProxy(String url) {
     if (!url.isEmptyAndNull()) {
-      DefaultHttpClientAdapter defaultHttpClientAdapter =
+      final DefaultHttpClientAdapter defaultHttpClientAdapter =
           _dio.httpClientAdapter as DefaultHttpClientAdapter;
-      defaultHttpClientAdapter.onHttpClientCreate = (client) {
+      defaultHttpClientAdapter.onHttpClientCreate = (HttpClient client) {
         client.findProxy = (_) {
           return url;
         };
@@ -57,9 +58,9 @@ class RxDio {
   /// 证书校验
   RxDio addSSL(String cer) {
     if (!cer.isEmptyAndNull()) {
-      DefaultHttpClientAdapter _defaultHttpClientAdapter =
+      final DefaultHttpClientAdapter _defaultHttpClientAdapter =
           _dio.httpClientAdapter as DefaultHttpClientAdapter;
-      _defaultHttpClientAdapter.onHttpClientCreate = (client) {
+      _defaultHttpClientAdapter.onHttpClientCreate = (HttpClient client) {
         client.badCertificateCallback =
             (X509Certificate _certificate, String host, int port) {
           if (_certificate.pem == cer) {
@@ -73,8 +74,8 @@ class RxDio {
   }
 
   /// 添加请求拦截
-  RxDio addInterceptors(Function(Dio dio) call) {
-    final interceptor = call(_dio);
+  RxDio addInterceptors<T>(T Function(Dio dio) call) {
+    final T interceptor = call(_dio);
     if (interceptor != null) {
       if (interceptor is Iterable<Interceptor>) {
         _dio.interceptors.addAll(interceptor);
@@ -86,60 +87,66 @@ class RxDio {
   }
 
   /// Get 请求
-  PublishSubject getRequest<T>(String url, {Map<String, dynamic> parameter}) {
+  PublishSubject<Response<dynamic>> getRequest<T>(String url,
+      {Map<String, dynamic> parameter}) {
     // 创建观察序列
-    PublishSubject _publishSubject = PublishSubject();
+    final PublishSubject<Response<dynamic>> _publishSubject =
+        PublishSubject<Response<dynamic>>();
     if (!url.isEmptyAndNull()) {
       _start?.call();
-      _request(
-        _dio.get(url, queryParameters: parameter),
+      _request<Response<dynamic>>(
+        _dio.get<Response<dynamic>>(url, queryParameters: parameter),
         _publishSubject,
       );
     } else {
-      _publishSubject.addError(RxError(422, "The url is't empty and null !!!"));
+      _publishSubject
+          .addError(const RxError(422, "The url is't empty and null !!!"));
       _publishSubject.close();
     }
     return _publishSubject;
   }
 
   /// Post 请求
-  PublishSubject postRequest<T>(String url,
+  PublishSubject<Response<dynamic>> postRequest<T>(String url,
       {dynamic data, Map<String, dynamic> parameter}) {
     // 创建观察序列
-    PublishSubject _publishSubject = PublishSubject();
+    final PublishSubject<Response<dynamic>> _publishSubject =
+        PublishSubject<Response<dynamic>>();
     if (!url.isEmptyAndNull()) {
       _start?.call();
-      _request(
-        _dio.post(url, data: data, queryParameters: parameter),
+      _request<Response<dynamic>>(
+        _dio.post<Response<dynamic>>(url,
+            data: data, queryParameters: parameter),
         _publishSubject,
       );
     } else {
-      _publishSubject.addError(RxError(422, "The url is't empty and null !!!"));
+      _publishSubject
+          .addError(const RxError(422, "The url is't empty and null !!!"));
       _publishSubject.close();
     }
     return _publishSubject;
   }
 
   /// Upload 请求
-  PublishSubject uploadRequest<T>(String url, String name, List<File> files,
+  PublishSubject<Response<dynamic>> uploadRequest<T>(
+      String url, String name, List<File> files,
       {Map<String, dynamic> parameter,
       Function(int, int) onSendProgress,
       Function(int, int) onReceiveProgress}) {
     // 创建观察序列
-    PublishSubject _publishSubject = PublishSubject();
+    final PublishSubject<Response<dynamic>> _publishSubject =
+        PublishSubject<Response<dynamic>>();
     if (!url.isEmptyAndNull() &&
         !files.isEmptyAndNull() &&
         !name.isEmptyAndNull()) {
       _start?.call();
-      FormData data = FormData();
-      files.map((file) async* {
-        final _file = await MultipartFile.fromFile(file.path);
-        data.files.add(
-          MapEntry(name, _file),
-        );
+      final FormData data = FormData();
+      files.map((File file) async* {
+        final MultipartFile _file = await MultipartFile.fromFile(file.path);
+        data.files.add(MapEntry<String, MultipartFile>(name, _file));
       });
-      _request(
-        _dio.post(url,
+      _request<Response<dynamic>>(
+        _dio.post<Response<dynamic>>(url,
             queryParameters: parameter,
             data: data,
             onSendProgress: onSendProgress,
@@ -147,61 +154,69 @@ class RxDio {
         _publishSubject,
       );
     } else {
-      _publishSubject.addError(
-          RxError(422, "The url or name or files is't empty and null !!!"));
+      _publishSubject.addError(const RxError(
+          422, "The url or name or files is't empty and null !!!"));
       _publishSubject.close();
     }
     return _publishSubject;
   }
 
   /// Put 请求
-  PublishSubject putRequest<T>(String url,
+  PublishSubject<Response<dynamic>> putRequest<T>(String url,
       {dynamic data, Map<String, dynamic> parameter}) {
     // 创建观察序列
-    PublishSubject _publishSubject = PublishSubject();
+    final PublishSubject<Response<dynamic>> _publishSubject =
+        PublishSubject<Response<dynamic>>();
     if (!url.isEmptyAndNull()) {
       _start?.call();
-      _request(
-        _dio.put(url, data: data, queryParameters: parameter),
+      _request<Response<dynamic>>(
+        _dio.put<Response<dynamic>>(url,
+            data: data, queryParameters: parameter),
         _publishSubject,
       );
     } else {
-      _publishSubject.addError(RxError(422, "The url is't empty and null !!!"));
+      _publishSubject
+          .addError(const RxError(422, "The url is't empty and null !!!"));
       _publishSubject.close();
     }
     return _publishSubject;
   }
 
   /// Delete 请求
-  PublishSubject deleteRequest<T>(String url,
+  PublishSubject<Response<dynamic>> deleteRequest<T>(String url,
       {dynamic data, Map<String, dynamic> parameter}) {
     // 创建观察序列
-    PublishSubject _publishSubject = PublishSubject();
+    final PublishSubject<Response<dynamic>> _publishSubject =
+        PublishSubject<Response<dynamic>>();
     if (!url.isEmptyAndNull()) {
       _start?.call();
-      _request(
-        _dio.delete(url, data: data, queryParameters: parameter),
+      _request<Response<dynamic>>(
+        _dio.delete<Response<dynamic>>(url,
+            data: data, queryParameters: parameter),
         _publishSubject,
       );
     } else {
-      _publishSubject.addError(RxError(422, "The url is't empty and null !!!"));
+      _publishSubject
+          .addError(const RxError(422, "The url is't empty and null !!!"));
       _publishSubject.close();
     }
     return _publishSubject;
   }
 
   /// 文件下载
-  PublishSubject downloadRequest<T>(String url, String savePath,
+  PublishSubject<Response<dynamic>> downloadRequest<T>(
+      String url, String savePath,
       {Map<String, dynamic> parameter,
       bool deleteOnError,
       String lengthHeader,
       Function(int, int) onSendProgress,
       Function(int, int) onReceiveProgress}) {
     // 创建观察序列
-    PublishSubject _publishSubject = PublishSubject();
+    final PublishSubject<Response<dynamic>> _publishSubject =
+        PublishSubject<Response<dynamic>>();
     if (!url.isEmptyAndNull() && !savePath.isEmptyAndNull()) {
       _start?.call();
-      _request(
+      _request<Response<dynamic>>(
         _dio.download(
           url,
           savePath,
@@ -214,17 +229,17 @@ class RxDio {
       );
     } else {
       _publishSubject.addError(
-          RxError(422, "The url or savePath is't empty and null !!!"));
+          const RxError(422, "The url or savePath is't empty and null !!!"));
       _publishSubject.close();
     }
     return _publishSubject;
   }
 
   // 公共方法处理
-  void _request<T>(
-      Future<Response<dynamic>> future, PublishSubject _publishSubject) {
+  void _request<T>(Future<Response<dynamic>> future,
+      PublishSubject<Response<dynamic>> _publishSubject) {
     try {
-      future.then((response) {
+      future.then((Response<dynamic> response) {
         _publishSubject.add(response);
       }).whenComplete(() {
         _end?.call();
@@ -238,8 +253,10 @@ class RxDio {
           data: error.response.data,
         ),
       );
+      _publishSubject.close();
     } catch (error) {
-      _publishSubject.add(RxError(-1, error.toString()));
+      _publishSubject.addError(RxError(-1, error.toString()));
+      _publishSubject.close();
     }
   }
 
