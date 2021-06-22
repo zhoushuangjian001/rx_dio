@@ -1,25 +1,28 @@
 import 'dart:async';
 import 'dart:io';
+// ignore: import_of_legacy_library_into_null_safe
 import 'package:dio/adapter.dart';
+// ignore: import_of_legacy_library_into_null_safe
 import 'package:dio/dio.dart';
-import 'package:rxdart/rxdart.dart';
 import 'package:idkit_rxdio/src/rx_error.dart';
 import 'package:idkit_rxdio/src/rx_inspect.dart';
+// ignore: import_of_legacy_library_into_null_safe
+import 'package:rxdart/rxdart.dart';
 
 class RxDio {
   /// 初始化
-  RxDio({BaseOptions options}) {
+  RxDio({BaseOptions? options}) {
     _dio = Dio(options);
   }
 
   /// 请求开始
-  Function _start;
+  late Function() _start;
 
   /// 请求结束
-  Function _end;
+  late Function() _end;
 
   /// 请求体
-  Dio _dio;
+  late Dio _dio;
 
   /// 请求开始回调
   RxDio addStart(Function() start) {
@@ -34,7 +37,7 @@ class RxDio {
   }
 
   /// 添加请求配置
-  RxDio addOptions({BaseOptions options}) {
+  RxDio addOptions({BaseOptions? options}) {
     if (options != null) {
       _dio.options = options;
     }
@@ -87,14 +90,15 @@ class RxDio {
   }
 
   /// Get 请求
-  PublishSubject<T> getRequest<T>(String url,
-      {Map<String, dynamic> parameter}) {
+  PublishSubject<Response<T>> getRequest<T>(String url,
+      {Map<String, dynamic>? parameter}) {
     // 创建观察序列
-    final PublishSubject<T> _publishSubject = PublishSubject<T>();
+    final PublishSubject<Response<T>> _publishSubject =
+        PublishSubject<Response<T>>();
     if (!url.isEmptyAndNull()) {
-      _start?.call();
+      _start.call();
       _request(
-        _dio.get<Response<T>>(url, queryParameters: parameter),
+        _dio.get<T>(url, queryParameters: parameter),
         _publishSubject,
       );
     } else {
@@ -106,14 +110,15 @@ class RxDio {
   }
 
   /// Post 请求
-  PublishSubject<T> postRequest<T>(String url,
-      {dynamic data, Map<String, dynamic> parameter}) {
+  PublishSubject<Response<T>> postRequest<T>(String url,
+      {dynamic data, Map<String, dynamic>? parameter}) {
     // 创建观察序列
-    final PublishSubject<T> _publishSubject = PublishSubject<T>();
+    final PublishSubject<Response<T>> _publishSubject =
+        PublishSubject<Response<T>>();
     if (!url.isEmptyAndNull()) {
-      _start?.call();
+      _start.call();
       _request(
-        _dio.post<Response<T>>(url, data: data, queryParameters: parameter),
+        _dio.post<T>(url, data: data, queryParameters: parameter),
         _publishSubject,
       );
     } else {
@@ -125,23 +130,25 @@ class RxDio {
   }
 
   /// Upload 请求
-  PublishSubject<T> uploadRequest<T>(String url, String name, List<File> files,
-      {Map<String, dynamic> parameter,
-      Function(int, int) onSendProgress,
-      Function(int, int) onReceiveProgress}) {
+  PublishSubject<Response<T>> uploadRequest<T>(
+      String url, String name, List<File> files,
+      {Map<String, dynamic>? parameter,
+      Function(int, int)? onSendProgress,
+      Function(int, int)? onReceiveProgress}) {
     // 创建观察序列
-    final PublishSubject<T> _publishSubject = PublishSubject<T>();
+    final PublishSubject<Response<T>> _publishSubject =
+        PublishSubject<Response<T>>();
     if (!url.isEmptyAndNull() &&
         !files.isEmptyAndNull() &&
         !name.isEmptyAndNull()) {
-      _start?.call();
+      _start.call();
       final FormData data = FormData();
       files.map((File file) async* {
         final MultipartFile _file = await MultipartFile.fromFile(file.path);
         data.files.add(MapEntry<String, MultipartFile>(name, _file));
       });
       _request(
-        _dio.post<Response<T>>(url,
+        _dio.post<T>(url,
             queryParameters: parameter,
             data: data,
             onSendProgress: onSendProgress,
@@ -157,14 +164,15 @@ class RxDio {
   }
 
   /// Put 请求
-  PublishSubject<T> putRequest<T>(String url,
-      {dynamic data, Map<String, dynamic> parameter}) {
+  PublishSubject<Response<T>> putRequest<T>(String url,
+      {dynamic data, Map<String, dynamic>? parameter}) {
     // 创建观察序列
-    final PublishSubject<T> _publishSubject = PublishSubject<T>();
+    final PublishSubject<Response<T>> _publishSubject =
+        PublishSubject<Response<T>>();
     if (!url.isEmptyAndNull()) {
-      _start?.call();
+      _start.call();
       _request(
-        _dio.put<Response<T>>(url, data: data, queryParameters: parameter),
+        _dio.put<T>(url, data: data, queryParameters: parameter),
         _publishSubject,
       );
     } else {
@@ -176,14 +184,15 @@ class RxDio {
   }
 
   /// Delete 请求
-  PublishSubject<T> deleteRequest<T>(String url,
-      {dynamic data, Map<String, dynamic> parameter}) {
+  PublishSubject<Response<T>> deleteRequest<T>(String url,
+      {dynamic data, Map<String, dynamic>? parameter}) {
     // 创建观察序列
-    final PublishSubject<T> _publishSubject = PublishSubject<T>();
+    final PublishSubject<Response<T>> _publishSubject =
+        PublishSubject<Response<T>>();
     if (!url.isEmptyAndNull()) {
-      _start?.call();
+      _start.call();
       _request(
-        _dio.delete<Response<T>>(url, data: data, queryParameters: parameter),
+        _dio.delete<T>(url, data: data, queryParameters: parameter),
         _publishSubject,
       );
     } else {
@@ -195,17 +204,18 @@ class RxDio {
   }
 
   /// 文件下载
-  PublishSubject<T> downloadRequest<T>(String url, String savePath,
-      {Map<String, dynamic> parameter,
-      bool deleteOnError,
-      String lengthHeader,
-      Function(int, int) onSendProgress,
-      Function(int, int) onReceiveProgress}) {
+  PublishSubject<Response<T>> downloadRequest<T>(String url, String savePath,
+      {Map<String, dynamic>? parameter,
+      bool? deleteOnError,
+      String? lengthHeader,
+      Function(int, int)? onSendProgress,
+      Function(int, int)? onReceiveProgress}) {
     // 创建观察序列
-    final PublishSubject<T> _publishSubject = PublishSubject<T>();
+    final PublishSubject<Response<T>> _publishSubject =
+        PublishSubject<Response<T>>();
     if (!url.isEmptyAndNull() && !savePath.isEmptyAndNull()) {
-      _start?.call();
-      _request(
+      _start.call();
+      _request<dynamic>(
         _dio.download(
           url,
           savePath,
@@ -225,13 +235,13 @@ class RxDio {
   }
 
   // 公共方法处理
-  void _request(Future<Response<dynamic>> future,
-      PublishSubject<dynamic> _publishSubject) {
+  void _request<T>(
+      Future<Response<T>> future, PublishSubject<Response<T>> _publishSubject) {
     try {
-      future.then((Response<dynamic> response) {
+      future.then((Response<T> response) {
         _publishSubject.add(response);
       }).whenComplete(() {
-        _end?.call();
+        _end.call();
         _publishSubject.close();
       });
     } on DioError catch (error) {
@@ -250,7 +260,7 @@ class RxDio {
   }
 
   /// 清除请求 Task, 释放资源
-  void close({bool force}) => _dio.close;
+  void close({bool? force}) => _dio.close;
 
   /// 清除 dio 队列等待
   void clear() => _dio.clear;
