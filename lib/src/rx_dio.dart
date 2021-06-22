@@ -206,8 +206,8 @@ class RxDio {
   /// 文件下载
   PublishSubject<Response<T>> downloadRequest<T>(String url, String savePath,
       {Map<String, dynamic>? parameter,
-      bool? deleteOnError,
-      String? lengthHeader,
+      bool deleteOnError = true,
+      String lengthHeader = Headers.contentLengthHeader,
       Function(int, int)? onSendProgress,
       Function(int, int)? onReceiveProgress}) {
     // 创建观察序列
@@ -247,9 +247,9 @@ class RxDio {
     } on DioError catch (error) {
       _publishSubject.addError(
         RxError(
-          error.response.statusCode,
-          error.response.statusMessage,
-          data: error.response.data,
+          error.response!.statusCode,
+          error.response!.statusMessage,
+          data: error.response?.data,
         ),
       );
       _publishSubject.close();
