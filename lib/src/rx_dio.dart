@@ -13,10 +13,10 @@ class RxDio {
   }
 
   /// 请求开始
-  late Function() _start;
+  Function()? _start;
 
   /// 请求结束
-  late Function() _end;
+  Function()? _end;
 
   /// 请求体
   late Dio _dio;
@@ -93,7 +93,7 @@ class RxDio {
     final PublishSubject<Response<T>> _publishSubject =
         PublishSubject<Response<T>>();
     if (!url.isEmptyAndNull()) {
-      _start.call();
+      _start?.call();
       _request(
         _dio.get<T>(url, queryParameters: parameter),
         _publishSubject,
@@ -113,7 +113,7 @@ class RxDio {
     final PublishSubject<Response<T>> _publishSubject =
         PublishSubject<Response<T>>();
     if (!url.isEmptyAndNull()) {
-      _start.call();
+      _start?.call();
       _request(
         _dio.post<T>(url, data: data, queryParameters: parameter),
         _publishSubject,
@@ -138,7 +138,7 @@ class RxDio {
     if (!url.isEmptyAndNull() &&
         !files.isEmptyAndNull() &&
         !name.isEmptyAndNull()) {
-      _start.call();
+      _start?.call();
       final FormData data = FormData();
       files.map((File file) async* {
         final MultipartFile _file = await MultipartFile.fromFile(file.path);
@@ -167,7 +167,7 @@ class RxDio {
     final PublishSubject<Response<T>> _publishSubject =
         PublishSubject<Response<T>>();
     if (!url.isEmptyAndNull()) {
-      _start.call();
+      _start?.call();
       _request(
         _dio.put<T>(url, data: data, queryParameters: parameter),
         _publishSubject,
@@ -187,7 +187,7 @@ class RxDio {
     final PublishSubject<Response<T>> _publishSubject =
         PublishSubject<Response<T>>();
     if (!url.isEmptyAndNull()) {
-      _start.call();
+      _start?.call();
       _request(
         _dio.delete<T>(url, data: data, queryParameters: parameter),
         _publishSubject,
@@ -211,7 +211,7 @@ class RxDio {
     final PublishSubject<Response<T>> _publishSubject =
         PublishSubject<Response<T>>();
     if (!url.isEmptyAndNull() && !savePath.isEmptyAndNull()) {
-      _start.call();
+      _start?.call();
       _request<dynamic>(
         _dio.download(
           url,
@@ -238,7 +238,7 @@ class RxDio {
       future.then((Response<T> response) {
         _publishSubject.add(response);
       }).whenComplete(() {
-        _end.call();
+        _end?.call();
         _publishSubject.close();
       });
     } on DioError catch (error) {
