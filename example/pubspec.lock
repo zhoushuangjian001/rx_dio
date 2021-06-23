@@ -56,7 +56,7 @@ packages:
       name: dio
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "3.0.10"
+    version: "4.0.0"
   fake_async:
     dependency: transitive
     description:
@@ -80,7 +80,7 @@ packages:
       name: http_parser
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "3.1.4"
+    version: "4.0.0"
   idkit_rxdio:
     dependency: "direct main"
     description:
@@ -115,7 +115,7 @@ packages:
       name: rxdart
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "0.25.0"
+    version: "0.27.1"
   sky_engine:
     dependency: transitive
     description: flutter

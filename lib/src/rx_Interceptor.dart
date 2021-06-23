@@ -1,4 +1,3 @@
-// ignore: import_of_legacy_library_into_null_safe
 import 'package:dio/dio.dart';
 
 class RxInterceptor extends Interceptor {
@@ -15,23 +14,38 @@ class RxInterceptor extends Interceptor {
   final InterceptorErrorCallback? _onError;
 
   @override
-  Future<dynamic> onRequest(RequestOptions options) async {
+  void onRequest(
+    RequestOptions options,
+    RequestInterceptorHandler handler,
+  ) {
     if (_onRequest != null) {
-      return _onRequest!(options);
+      _onRequest!(options, handler);
+    } else {
+      handler.next(options);
     }
   }
 
   @override
-  Future<dynamic> onResponse(Response<dynamic> response) async {
+  void onResponse(
+    Response<dynamic> response,
+    ResponseInterceptorHandler handler,
+  ) {
     if (_onResponse != null) {
-      return _onResponse!(response);
+      _onResponse!(response, handler);
+    } else {
+      handler.next(response);
     }
   }
 
   @override
-  Future<dynamic> onError(DioError err) async {
+  void onError(
+    DioError err,
+    ErrorInterceptorHandler handler,
+  ) {
     if (_onError != null) {
-      return _onError!(err);
+      _onError!(err, handler);
+    } else {
+      handler.next(err);
     }
   }
 }

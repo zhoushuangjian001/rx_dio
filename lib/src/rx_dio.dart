@@ -1,12 +1,9 @@
 import 'dart:async';
 import 'dart:io';
-// ignore: import_of_legacy_library_into_null_safe
 import 'package:dio/adapter.dart';
-// ignore: import_of_legacy_library_into_null_safe
 import 'package:dio/dio.dart';
 import 'package:idkit_rxdio/src/rx_error.dart';
 import 'package:idkit_rxdio/src/rx_inspect.dart';
-// ignore: import_of_legacy_library_into_null_safe
 import 'package:rxdart/rxdart.dart';
 
 class RxDio {
@@ -247,9 +244,9 @@ class RxDio {
     } on DioError catch (error) {
       _publishSubject.addError(
         RxError<dynamic>(
-          error.response!.statusCode,
-          error.response.statusMessage,
-          data: error.response.data,
+          error.response?.statusCode ?? -1,
+          error.message,
+          data: error.response?.data,
         ),
       );
       _publishSubject.close();
@@ -260,7 +257,7 @@ class RxDio {
   }
 
   /// 清除请求 Task, 释放资源
-  void close({bool? force}) => _dio.close;
+  void close({bool force = false}) => _dio.close;
 
   /// 清除 dio 队列等待
   void clear() => _dio.clear;

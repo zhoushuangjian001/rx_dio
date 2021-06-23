@@ -10,7 +10,7 @@ class RxError<T> implements Exception {
   final int code;
 
   /// 异常信息
-  final String? message;
+  final String message;
 
   /// 异常数据
   final T? data;

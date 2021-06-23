@@ -12,9 +12,9 @@ dependencies:
   flutter:
     sdk: flutter
   # 网络依赖
-  dio: any
+  dio: ^4.0.0
   # rxdart
-  rxdart: any
+  rxdart: ^0.27.1
 dev_dependencies:
   flutter_test:
     sdk: flutter
