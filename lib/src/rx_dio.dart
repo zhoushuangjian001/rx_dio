@@ -102,8 +102,8 @@ class RxDio {
         _publishSubject,
       );
     } else {
-      _publishSubject
-          .addError(const RxError(422, "The url is't empty and null !!!"));
+      _publishSubject.addError(
+          const RxError<dynamic>(422, "The url is't empty and null !!!"));
       _publishSubject.close();
     }
     return _publishSubject;
@@ -122,8 +122,8 @@ class RxDio {
         _publishSubject,
       );
     } else {
-      _publishSubject
-          .addError(const RxError(422, "The url is't empty and null !!!"));
+      _publishSubject.addError(
+          const RxError<dynamic>(422, "The url is't empty and null !!!"));
       _publishSubject.close();
     }
     return _publishSubject;
@@ -156,7 +156,7 @@ class RxDio {
         _publishSubject,
       );
     } else {
-      _publishSubject.addError(const RxError(
+      _publishSubject.addError(const RxError<dynamic>(
           422, "The url or name or files is't empty and null !!!"));
       _publishSubject.close();
     }
@@ -176,8 +176,8 @@ class RxDio {
         _publishSubject,
       );
     } else {
-      _publishSubject
-          .addError(const RxError(422, "The url is't empty and null !!!"));
+      _publishSubject.addError(
+          const RxError<dynamic>(422, "The url is't empty and null !!!"));
       _publishSubject.close();
     }
     return _publishSubject;
@@ -196,8 +196,8 @@ class RxDio {
         _publishSubject,
       );
     } else {
-      _publishSubject
-          .addError(const RxError(422, "The url is't empty and null !!!"));
+      _publishSubject.addError(
+          const RxError<dynamic>(422, "The url is't empty and null !!!"));
       _publishSubject.close();
     }
     return _publishSubject;
@@ -227,8 +227,8 @@ class RxDio {
         _publishSubject,
       );
     } else {
-      _publishSubject.addError(
-          const RxError(422, "The url or savePath is't empty and null !!!"));
+      _publishSubject.addError(const RxError<dynamic>(
+          422, "The url or savePath is't empty and null !!!"));
       _publishSubject.close();
     }
     return _publishSubject;
@@ -246,15 +246,15 @@ class RxDio {
       });
     } on DioError catch (error) {
       _publishSubject.addError(
-        RxError(
+        RxError<dynamic>(
           error.response!.statusCode,
-          error.response!.statusMessage,
-          data: error.response?.data,
+          error.response.statusMessage,
+          data: error.response.data,
         ),
       );
       _publishSubject.close();
     } catch (error) {
-      _publishSubject.addError(RxError(-1, error.toString()));
+      _publishSubject.addError(RxError<dynamic>(-1, error.toString()));
       _publishSubject.close();
     }
   }
